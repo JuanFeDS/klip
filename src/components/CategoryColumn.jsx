@@ -1,6 +1,8 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { FaPlus, FaEllipsisV } from 'react-icons/fa';
-import TabCard from "./TabCard";
+import { useDrop } from 'react-dnd';
+import DraggableTabCard from "./DraggableTabCard";
+import { ItemTypes } from '../utils/dragTypes';
 
 export default function CategoryColumn({ 
   category, 
@@ -9,13 +11,35 @@ export default function CategoryColumn({
   onEditTab,
   onDeleteTab,
   onDeleteCategory,
-  onEditCategory 
+  onEditCategory,
+  moveTabToCategory
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const ref = useRef(null);
+  
+  const [{ isOver }, drop] = useDrop({
+    accept: ItemTypes.KLIP,
+    drop: (item, monitor) => {
+      if (!monitor.didDrop() && moveTabToCategory) {
+        moveTabToCategory(item.id, category);
+      }
+    },
+    collect: (monitor) => ({
+      isOver: monitor.isOver({ shallow: true })
+    })
+  });
+  
+  // Conectar el ref del contenedor con el drop target
+  drop(ref);
   
   return (
-    <div className="w-72 flex-shrink-0">
-      <div className="sticky top-0 z-10 py-2 bg-white dark:bg-gray-900">
+    <div 
+      ref={ref}
+      className={`w-72 flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 ${
+        isOver ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : ''
+      }`}
+    >
+      <div className="py-2 bg-white dark:bg-gray-800">
         <div className="flex items-center justify-between px-2">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {category}
@@ -71,7 +95,7 @@ export default function CategoryColumn({
         </div>
       </div>
       
-      <div className="mt-2 space-y-3 px-2 pb-2">
+      <div className="mt-2 space-y-3 px-2 pb-2 min-h-[100px] transition-all duration-200">
         {tabs.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
             <p>No hay tarjetas en esta categoría</p>
@@ -84,9 +108,12 @@ export default function CategoryColumn({
           </div>
         ) : (
           tabs.map((tab) => (
-            <TabCard 
-              key={tab.id} 
-              {...tab}
+            <DraggableTabCard
+              key={tab.id}
+              id={tab.id}
+              title={tab.title}
+              url={tab.url}
+              category={tab.category}
               onEdit={() => onEditTab?.(tab)}
               onDelete={() => onDeleteTab?.(tab.id)}
             />
