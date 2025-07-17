@@ -1,12 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 
 const DEFAULT_CATEGORIES = ["Trabajo", "Personal", "Entretenimiento", "Educación"];
 
+// Posiciones iniciales para las columnas
+const getInitialPositions = (categories) => {
+  return categories.reduce((acc, category, index) => {
+    acc[category] = { x: index * 320, y: 0 }; // 320px de ancho por columna
+    return acc;
+  }, {});
+};
+
 export function useTabs(initialTabs = []) {
   const [tabs, setTabs] = useState(() => {
     const savedTabs = localStorage.getItem('klip-tabs');
-    return savedTabs ? JSON.parse(savedTabs) : initialTabs;
+    // Si hay tabs guardados, usarlos. Si no, usar initialTabs solo si no es undefined
+    return savedTabs ? JSON.parse(savedTabs) : (initialTabs || []);
   });
   
   const [categories, setCategories] = useState(() => {
@@ -14,7 +23,36 @@ export function useTabs(initialTabs = []) {
     return savedCategories ? JSON.parse(savedCategories) : DEFAULT_CATEGORIES;
   });
 
-  // Guardar en localStorage cuando cambien las pestañas o categorías
+  // Estado para las posiciones de las columnas
+  const [columnPositions, setColumnPositions] = useState(() => {
+    const savedPositions = localStorage.getItem('klip-column-positions');
+    return savedPositions 
+      ? JSON.parse(savedPositions) 
+      : getInitialPositions(categories);
+  });
+
+  // Actualizar posiciones cuando cambian las categorías
+  useEffect(() => {
+    // Solo actualizar si hay categorías
+    if (!categories.length) return;
+    
+    setColumnPositions(prevPositions => {
+      // Si ya hay posiciones guardadas y hay categorías, no hacer cambios innecesarios
+      if (Object.keys(prevPositions).length > 0) {
+        return prevPositions;
+      }
+      
+      // Solo inicializar posiciones si no hay ninguna guardada
+      const newPositions = {};
+      categories.forEach((category, index) => {
+        newPositions[category] = { x: index * 320, y: 0 };
+      });
+      
+      return newPositions;
+    });
+  }, [categories]);
+
+  // Guardar en localStorage cuando cambien los estados
   useEffect(() => {
     localStorage.setItem('klip-tabs', JSON.stringify(tabs));
   }, [tabs]);
@@ -22,6 +60,10 @@ export function useTabs(initialTabs = []) {
   useEffect(() => {
     localStorage.setItem('klip-categories', JSON.stringify(categories));
   }, [categories]);
+  
+  useEffect(() => {
+    localStorage.setItem('klip-column-positions', JSON.stringify(columnPositions));
+  }, [columnPositions]);
 
   // Agrupar pestañas por categoría
   const groupedTabs = tabs.reduce((acc, tab) => {
@@ -67,6 +109,17 @@ export function useTabs(initialTabs = []) {
     setTabs(tabs.map(tab => 
       tab.category === oldName ? { ...tab, category: newName } : tab
     ));
+    
+    // Actualizar posiciones de columnas
+    setColumnPositions(prevPositions => {
+      if (prevPositions[oldName]) {
+        const newPositions = { ...prevPositions };
+        newPositions[newName] = newPositions[oldName];
+        delete newPositions[oldName];
+        return newPositions;
+      }
+      return prevPositions;
+    });
   };
 
   const deleteCategory = (categoryName) => {
@@ -87,15 +140,33 @@ export function useTabs(initialTabs = []) {
     setCategories(categories.filter(cat => cat !== categoryName));
   };
 
+  // Función para actualizar la posición de una columna
+  const updateColumnPosition = useCallback((category, position) => {
+    setColumnPositions(prevPositions => ({
+      ...prevPositions,
+      [category]: position
+    }));
+  }, []);
+
+  // Función para mover un klip a otra categoría
+  const moveTabToCategory = useCallback((tabId, newCategory) => {
+    setTabs(tabs.map(tab => 
+      tab.id === tabId ? { ...tab, category: newCategory } : tab
+    ));
+  }, [tabs]);
+
   return {
     tabs,
     categories,
     groupedTabs,
+    columnPositions,
     addTab,
     updateTab,
     deleteTab,
     addCategory,
     updateCategory,
-    deleteCategory
+    deleteCategory,
+    updateColumnPosition,
+    moveTabToCategory
   };
 }
