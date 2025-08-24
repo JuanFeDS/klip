@@ -271,7 +271,8 @@ export default function Home() {
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 p-4">
       <Header 
         onAddTab={() => handleAddTab()} 
-        onAddCategory={handleAddCategory} 
+        onAddCategory={handleAddCategory}
+        tabs={tabs}
       />
       
       <DndProvider backend={HTML5Backend}>
