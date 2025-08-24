@@ -1,4 +1,5 @@
-import { FaExternalLinkAlt, FaTrashAlt, FaEdit, FaCopy, FaClock } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaTrashAlt, FaEdit, FaCopy, FaClock, FaCheck } from 'react-icons/fa';
+import { useState } from 'react';
 
 // Función para calcular los días de antigüedad y el color correspondiente
 const getDaysAgoInfo = (dateString) => {
@@ -39,6 +40,7 @@ const getDaysAgoInfo = (dateString) => {
 };
 
 export default function TabCard({ title, url, category, onEdit, onDelete, createdAt }) {
+  const [copied, setCopied] = useState(false);
   const handleAction = (e, action) => {
     e.preventDefault();
     e.stopPropagation();
@@ -53,15 +55,8 @@ export default function TabCard({ title, url, category, onEdit, onDelete, create
     
     try {
       await navigator.clipboard.writeText(url);
-      const copyBtn = e.currentTarget;
-      const originalText = copyBtn.getAttribute('aria-label');
-      copyBtn.setAttribute('aria-label', '¡Copiado!');
-      copyBtn.classList.add('text-green-500');
-      
-      setTimeout(() => {
-        copyBtn.setAttribute('aria-label', originalText);
-        copyBtn.classList.remove('text-green-500');
-      }, 2000);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Error al copiar la URL: ', err);
     }
@@ -153,18 +148,26 @@ export default function TabCard({ title, url, category, onEdit, onDelete, create
           className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover/card:opacity-100 transition-all duration-200 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-1 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-20 scale-95 group-hover/card:scale-100"
           onClick={(e) => e.stopPropagation()}
         >
-          <button
-            onMouseDown={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-            }}
-            onClick={handleCopyUrl}
-            className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:text-gray-400 dark:hover:bg-blue-900/20 rounded transition-colors relative"
-            aria-label="Copiar URL"
-            title="Copiar enlace"
-          >
-            <FaCopy size={14} />
-          </button>
+          <div className="relative">
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={handleCopyUrl}
+              className={`p-1.5 ${copied ? 'text-green-500' : 'text-gray-500 hover:text-blue-500'} hover:bg-blue-50 dark:text-gray-400 dark:hover:bg-blue-900/20 rounded transition-colors`}
+              aria-label={copied ? '¡Copiado!' : 'Copiar URL'}
+              title={copied ? '¡Copiado!' : 'Copiar enlace'}
+            >
+              {copied ? <FaCheck size={14} /> : <FaCopy size={14} />}
+            </button>
+            {copied && (
+              <span className="absolute left-1/2 -translate-x-1/2 -top-8 bg-gray-800 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                ¡Copiado!
+                <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 w-2 h-2 bg-gray-800 rotate-45"></div>
+              </span>
+            )}
+          </div>
           
           {onEdit && (
             <button
