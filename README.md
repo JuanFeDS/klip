@@ -1,55 +1,64 @@
-# Klip - Tab Organizer
+# Klip - Organizador de Pestañas
 
-A modern web application for organizing your browser tabs visually using React, Vite, and TailwindCSS.
+Una aplicación web moderna para organizar visualmente tus pestañas del navegador, desarrollada con React, Vite y TailwindCSS.
 
-## Features
+## Características
 
-- 📝 Create and manage tabs with URLs and titles
-- 📁 Organize tabs into categories
-- 🔄 Drag and drop to reorder tabs
-- 🌓 Dark mode support
-- 🎨 Modern UI with TailwindCSS
-- 📱 Responsive design
+### 🗂️ Gestión de Pestañas
+- **Creación y edición** de pestañas con URLs personalizables y títulos descriptivos
+- **Acceso rápido** a tus sitios web favoritos desde un solo lugar
 
-## Tech Stack
+### 📂 Organización Intuitiva
+- **Sistema de categorías** para agrupar pestañas relacionadas
+- **Interfaz limpia** que muestra claramente la jerarquía de tus pestañas
+
+### 🎨 Experiencia de Usuario
+- **Modo oscuro/Claro** para una visualización cómoda en cualquier condición de luz
+- **Carga instantánea** gracias a Vite y React 18
+
+### 🔄 Almacenamiento
+- Guardado automático en **localStorage** del navegador
+- Interfaz intuitiva para **importar/exportar** tu configuración
+
+## Tecnologías
 
 - React 18
 - Vite
 - TailwindCSS
 - React Icons
-- localStorage for persistence
+- Almacenamiento local (localStorage)
 
-## Getting Started
+## Comenzando
 
-1. Clone the repository
-2. Install dependencies:
+1. Clona el repositorio
+2. Instala las dependencias:
    ```bash
    npm install
    ```
-3. Start the development server:
+3. Inicia el servidor de desarrollo:
    ```bash
    npm run dev
    ```
 
-## Project Structure
+## Estructura del Proyecto
 
 ```
 src/
-├── assets/          # Static assets
-├── components/      # React components
-├── data/           # Sample data
-├── hooks/          # Custom React hooks
-└── pages/          # Page components
+├── assets/          # Archivos estáticos
+├── components/      # Componentes de React
+├── data/           # Datos de ejemplo
+├── hooks/          # Hooks personalizados
+└── pages/          # Componentes de páginas
 ```
 
-## Contributing
+## Cómo Contribuir
 
-1. Fork the repository
-2. Create your feature branch
-3. Commit your changes
-4. Push to the branch
-5. Create a Pull Request
+1. Haz un fork del repositorio
+2. Crea una rama para tu funcionalidad
+3. Realiza tus cambios
+4. Sube los cambios a tu rama
+5. Crea un Pull Request
 
-## License
+## Licencia
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+Este proyecto está bajo la Licencia MIT - consulta el archivo [LICENSE](LICENSE) para más detalles.
