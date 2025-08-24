@@ -1,10 +1,30 @@
-import { FaPlus, FaLayerGroup, FaTags, FaLink } from 'react-icons/fa';
+import { FaPlus, FaLayerGroup, FaTags, FaLink, FaFileExport, FaFileCsv, FaFileCode } from 'react-icons/fa';
+import { useState, useRef, useEffect } from 'react';
+import { exportToCSV, exportToJSON } from '../utils/exportUtils';
 
-export default function Header({ onAddTab, onAddCategory, tabs = [] }) {
+export default function Header({ onAddTab, onAddCategory, tabs = [], categories = [] }) {
+  // Estados para el menú de exportación
+  const [showExportMenu, setShowExportMenu] = useState(false);
+  const exportMenuRef = useRef(null);
+  
+  // Cerrar el menú al hacer clic fuera
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (exportMenuRef.current && !exportMenuRef.current.contains(event.target)) {
+        setShowExportMenu(false);
+      }
+    }
+    
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+  
   // Calcular estadísticas
   const totalTabs = tabs.length;
-  const categories = [...new Set(tabs.map(tab => tab.category).filter(Boolean))];
-  const totalCategories = categories.length;
+  const uniqueCategories = [...new Set(tabs.map(tab => tab.category).filter(Boolean))];
+  const totalCategories = uniqueCategories.length;
   const httpLinks = tabs.filter(tab => tab.url.startsWith('http:')).length;
   const httpsLinks = tabs.filter(tab => tab.url.startsWith('https:')).length;
   return (
@@ -31,6 +51,37 @@ export default function Header({ onAddTab, onAddCategory, tabs = [] }) {
           >
             <FaPlus size={12} /> Nuevo Klip
           </button>
+          <div className="relative" ref={exportMenuRef}>
+            <button
+              onClick={() => setShowExportMenu(!showExportMenu)}
+              className="px-3 py-1.5 text-sm font-medium rounded-md bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors flex items-center gap-1"
+            >
+              <FaFileExport size={12} /> Exportar
+            </button>
+            
+            {showExportMenu && (
+              <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
+                <button
+                  onClick={() => {
+                    exportToCSV(tabs, uniqueCategories);
+                    setShowExportMenu(false);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <FaFileCsv className="mr-2 text-green-500" /> Exportar a CSV
+                </button>
+                <button
+                  onClick={() => {
+                    exportToJSON(tabs, uniqueCategories);
+                    setShowExportMenu(false);
+                  }}
+                  className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <FaFileCode className="mr-2 text-blue-500" /> Exportar a JSON
+                </button>
+              </div>
+            )}
+          </div>
         </div>
       </div>
       
