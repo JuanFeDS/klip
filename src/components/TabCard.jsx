@@ -39,44 +39,89 @@ const getDaysAgoInfo = (dateString) => {
 };
 
 export default function TabCard({ title, url, category, onEdit, onDelete, createdAt }) {
-  const handleCopyUrl = async (e) => {
+  const handleAction = (e, action) => {
+    e.preventDefault();
     e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    action?.();
+    return false;
+  };
+  const handleCopyUrl = async (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.nativeEvent.stopImmediatePropagation();
+    
     try {
       await navigator.clipboard.writeText(url);
-      // Opcional: Mostrar un mensaje de confirmación
       const copyBtn = e.currentTarget;
       const originalText = copyBtn.getAttribute('aria-label');
       copyBtn.setAttribute('aria-label', '¡Copiado!');
+      copyBtn.classList.add('text-green-500');
+      
       setTimeout(() => {
         copyBtn.setAttribute('aria-label', originalText);
+        copyBtn.classList.remove('text-green-500');
       }, 2000);
     } catch (err) {
       console.error('Error al copiar la URL: ', err);
     }
+    
+    return false;
   };
+
+  const handleCardClick = (e) => {
+    if (e.target.closest('button') || e.target.closest('a[target="_blank"]')) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  };
+
+  const handleLinkClick = (e) => {
+    if (e.target.closest('button')) {
+      e.preventDefault();
+      e.stopPropagation();
+      return false;
+    }
+  };
+
   const domain = new URL(url).hostname.replace('www.', '');
-  const { colorClass, displayText } = createdAt ? getDaysAgoInfo(createdAt) : { colorClass: 'bg-gray-400', displayText: 'Nuevo' };
+  const { colorClass, displayText } = createdAt ? getDaysAgoInfo(createdAt) : { 
+    colorClass: 'bg-gray-400', 
+    displayText: 'Nuevo' 
+  };
   
   return (
     <div className="group relative">
-      <div className="relative">
-        <a
-          href={url}
-          target="_blank"
-          rel="noopener noreferrer"
+      <div className="relative group/card">
+        {/* Contenido principal de la tarjeta */}
+        <div 
           className="block p-4 pr-14 rounded-xl shadow bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200 border border-transparent hover:border-primary/20 relative z-10"
+          onMouseDown={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }}
+          onClick={handleCardClick}
         >
           <div className="flex items-start gap-3">
             <div className="relative group/indicator">
-              <div className={`w-3 h-3 rounded-full ${colorClass} transition-all duration-300 group-hover/indicator:scale-125`}></div>
+              <div className={`w-3 h-3 rounded-full ${colorClass} transition-all duration-300 group-hover/indicator:scale-125`} />
               <span className="absolute left-1/2 -translate-x-1/2 -top-6 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/indicator:opacity-100 pointer-events-none transition-opacity duration-200">
                 {displayText}
               </span>
             </div>
+            
             <div className="flex-1 min-w-0">
-              <h3 className="text-base font-medium text-gray-900 dark:text-white truncate">
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-base font-medium text-gray-900 dark:text-white hover:text-blue-600 dark:hover:text-blue-400 truncate block"
+                onClick={handleLinkClick}
+                onMouseDown={(e) => e.preventDefault()}
+              >
                 {title}
-              </h3>
+              </a>
               <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                 {domain}
               </p>
@@ -90,12 +135,29 @@ export default function TabCard({ title, url, category, onEdit, onDelete, create
                 <span>{displayText}</span>
               </div>
             </div>
-            <FaExternalLinkAlt className="flex-shrink-0 text-gray-400 group-hover:text-primary transition-colors" />
+            
+            <a
+              href={url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-shrink-0 text-gray-400 hover:text-blue-500 transition-colors self-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <FaExternalLinkAlt size={14} />
+            </a>
           </div>
-        </a>
+        </div>
         
-        <div className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-1 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-20 scale-95 group-hover:scale-100">
+        {/* Botones de acción */}
+        <div 
+          className="absolute top-2 right-2 flex flex-col gap-1 opacity-0 group-hover/card:opacity-100 transition-all duration-200 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm p-1 rounded-lg shadow-lg border border-gray-100 dark:border-gray-700 z-20 scale-95 group-hover/card:scale-100"
+          onClick={(e) => e.stopPropagation()}
+        >
           <button
+            onMouseDown={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+            }}
             onClick={handleCopyUrl}
             className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:text-gray-400 dark:hover:bg-blue-900/20 rounded transition-colors relative"
             aria-label="Copiar URL"
@@ -103,28 +165,36 @@ export default function TabCard({ title, url, category, onEdit, onDelete, create
           >
             <FaCopy size={14} />
           </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onEdit?.();
-            }}
-            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-md transition-colors"
-            aria-label="Editar"
-          >
-            <FaEdit size={14} />
-          </button>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              onDelete?.();
-            }}
-            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-md transition-colors"
-            aria-label="Eliminar"
-          >
-            <FaTrashAlt size={14} />
-          </button>
+          
+          {onEdit && (
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={(e) => handleAction(e, onEdit)}
+              className="p-1.5 text-gray-500 hover:text-blue-500 hover:bg-blue-50 dark:text-gray-400 dark:hover:bg-blue-900/20 rounded transition-colors"
+              aria-label="Editar"
+              title="Editar tarjeta"
+            >
+              <FaEdit size={14} />
+            </button>
+          )}
+          
+          {onDelete && (
+            <button
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              onClick={(e) => handleAction(e, onDelete)}
+              className="p-1.5 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:text-gray-400 dark:hover:bg-red-900/20 rounded transition-colors"
+              aria-label="Eliminar"
+              title="Eliminar tarjeta"
+            >
+              <FaTrashAlt size={14} />
+            </button>
+          )}
         </div>
       </div>
     </div>

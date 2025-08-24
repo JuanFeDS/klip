@@ -35,7 +35,7 @@ export default function CategoryColumn({
   return (
     <div 
       ref={ref}
-      className={`w-72 flex-shrink-0 rounded-lg overflow-hidden transition-all duration-200 ${
+      className={`w-72 flex-shrink-0 h-full flex flex-col rounded-lg bg-white dark:bg-gray-800 shadow-sm transition-all duration-200 ${
         isOver ? 'ring-2 ring-blue-500 bg-blue-50/50 dark:bg-blue-900/20' : ''
       }`}
     >
@@ -50,7 +50,11 @@ export default function CategoryColumn({
           
           <div className="flex items-center gap-1">
             <button
-              onClick={() => onAddTab?.(category)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddTab?.(category);
+              }}
               className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               aria-label="Añadir tarjeta"
             >
@@ -59,7 +63,11 @@ export default function CategoryColumn({
             
             <div className="relative">
               <button
-                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setIsMenuOpen(!isMenuOpen);
+              }}
                 className="p-1.5 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
                 aria-label="Más opciones"
               >
@@ -69,7 +77,9 @@ export default function CategoryColumn({
               {isMenuOpen && (
                 <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-20 border border-gray-200 dark:border-gray-700">
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       onEditCategory?.(category);
                       setIsMenuOpen(false);
                     }}
@@ -78,7 +88,9 @@ export default function CategoryColumn({
                     Editar categoría
                   </button>
                   <button
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
                       setIsMenuOpen(false);
                       if (onDeleteCategory) {
                         onDeleteCategory(category);
@@ -95,12 +107,17 @@ export default function CategoryColumn({
         </div>
       </div>
       
-      <div className="mt-2 space-y-3 px-2 pb-2 min-h-[100px] transition-all duration-200">
+      <div className="flex-1 overflow-y-auto custom-scrollbar px-2 py-2" style={{ scrollBehavior: 'smooth' }}>
+        <div className="space-y-3">
         {tabs.length === 0 ? (
           <div className="p-4 text-center text-sm text-gray-500 dark:text-gray-400 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-lg">
             <p>No hay tarjetas en esta categoría</p>
             <button
-              onClick={() => onAddTab?.(category)}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onAddTab?.(category);
+              }}
               className="mt-2 text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300 font-medium"
             >
               + Añadir tarjeta
@@ -120,10 +137,18 @@ export default function CategoryColumn({
             />
           ))
         )}
-        
+        </div>
+      </div>
+      
+      <div className="px-2 pb-2">
         <button
-          onClick={() => onAddTab?.(category)}
-          className="w-full flex items-center justify-center gap-2 p-2 text-sm font-medium text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onAddTab?.(category);
+          }}
+          onMouseDown={(e) => e.preventDefault()}
+          className="w-full flex items-center justify-center gap-2 p-2 text-sm font-medium text-gray-500 hover:text-blue-500 dark:text-gray-400 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
         >
           <FaPlus size={14} />
           <span>Añadir una tarjeta</span>
