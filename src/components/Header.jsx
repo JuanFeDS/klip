@@ -26,6 +26,39 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
   const totalCategories = categories.length;
   const httpLinks = tabs.filter(tab => tab.url && tab.url.startsWith('http:')).length;
   const httpsLinks = tabs.filter(tab => tab.url && tab.url.startsWith('https:')).length;
+  
+  // Calcular estadísticas de antigüedad
+  const now = new Date();
+  const agesInDays = tabs
+    .map(tab => {
+      const createdAt = tab.createdAt ? new Date(tab.createdAt) : new Date();
+      return Math.floor((now - createdAt) / (1000 * 60 * 60 * 24));
+    })
+    .filter(age => !isNaN(age));
+    
+  const averageAge = agesInDays.length > 0 
+    ? Math.round(agesInDays.reduce((a, b) => a + b, 0) / agesInDays.length) 
+    : 0;
+    
+  // Encontrar el klip más reciente
+  const newestTab = tabs.length > 0 
+    ? tabs.reduce((newest, tab) => {
+        const tabDate = tab.createdAt ? new Date(tab.createdAt) : new Date(0);
+        const newestDate = newest ? new Date(newest.createdAt || 0) : new Date(0);
+        return tabDate > newestDate ? tab : newest;
+      }, null)
+    : null;
+    
+  // Calcular días desde el más reciente
+  const daysSinceNewest = newestTab 
+    ? Math.floor((now - new Date(newestTab.createdAt || now)) / (1000 * 60 * 60 * 24))
+    : null;
+    
+  const oldestTab = tabs.length > 0 
+    ? Math.max(...tabs
+        .map(tab => tab.createdAt ? new Date(tab.createdAt) : now)
+        .map(date => Math.floor((now - date) / (1000 * 60 * 60 * 24))))
+    : 0;
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
@@ -85,9 +118,9 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
       </div>
       
       {/* Panel de estadísticas integrado */}
-      <div className="grid grid-cols-3 gap-2 mb-3">
+      <div className="flex w-full gap-2 mb-3">
         {/* Total de tarjetas */}
-        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
+        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400">
               <FaLayerGroup className="text-sm" />
@@ -99,8 +132,47 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
           </div>
         </div>
         
+        {/* Klip más antiguo */}
+        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400">
+              <FaLayerGroup className="text-sm" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Más antigua</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                {oldestTab === 0 ? 'N/A' : 
+                 oldestTab === 1 ? 'Ayer' : 
+                 oldestTab < 30 ? `Hace ${oldestTab} días` : 
+                 Math.floor(oldestTab/30) === 1 ? 'Hace 1 mes' : 
+                 `Hace ${Math.floor(oldestTab/30)} meses`}
+              </p>
+            </div>
+          </div>
+        </div>
+        
+        {/* Klip más reciente */}
+        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
+              <FaLayerGroup className="text-sm" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs text-gray-500 dark:text-gray-400 truncate">Más reciente</p>
+              <p className="text-sm font-semibold text-gray-800 dark:text-white">
+                {!newestTab ? 'N/A' : 
+                 daysSinceNewest === 0 ? 'Hoy' :
+                 daysSinceNewest === 1 ? 'Ayer' : 
+                 daysSinceNewest < 30 ? `Hace ${daysSinceNewest} días` : 
+                 Math.floor(daysSinceNewest/30) === 1 ? 'Hace 1 mes' : 
+                 `Hace ${Math.floor(daysSinceNewest/30)} meses`}
+              </p>
+            </div>
+          </div>
+        </div>
+        
         {/* Total de categorías */}
-        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
+        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400">
               <FaTags className="text-sm" />
@@ -113,7 +185,7 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
         </div>
         
         {/* Enlaces seguros */}
-        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg">
+        <div className="bg-gray-50 dark:bg-gray-700 p-2 rounded-lg flex-1 min-w-0">
           <div className="flex items-center gap-2">
             <div className="p-1.5 rounded-full bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400">
               <FaLink className="text-sm" />

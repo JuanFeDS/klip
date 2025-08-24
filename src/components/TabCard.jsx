@@ -1,6 +1,44 @@
-import { FaExternalLinkAlt, FaTrashAlt, FaEdit, FaCopy } from 'react-icons/fa';
+import { FaExternalLinkAlt, FaTrashAlt, FaEdit, FaCopy, FaClock } from 'react-icons/fa';
 
-export default function TabCard({ title, url, category, onEdit, onDelete }) {
+// Función para calcular los días de antigüedad y el color correspondiente
+const getDaysAgoInfo = (dateString) => {
+  const createdDate = new Date(dateString);
+  const today = new Date();
+  const diffTime = Math.abs(today - createdDate);
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  
+  // Determinar el color basado en los días
+  let colorClass = 'bg-blue-500';
+  if (diffDays > 30) colorClass = 'bg-red-500';
+  else if (diffDays > 7) colorClass = 'bg-amber-500';
+  else if (diffDays > 1) colorClass = 'bg-green-500';
+  
+  // Formatear la fecha
+  const formatter = new Intl.RelativeTimeFormat('es', { numeric: 'auto' });
+  let displayText;
+  
+  if (diffDays < 1) {
+    const diffHours = Math.ceil(diffTime / (1000 * 60 * 60));
+    if (diffHours < 1) {
+      const diffMinutes = Math.ceil(diffTime / (1000 * 60));
+      displayText = `Hace ${diffMinutes} min`;
+    } else {
+      displayText = `Hace ${diffHours} h`;
+    }
+  } else if (diffDays < 7) {
+    displayText = formatter.format(-diffDays, 'day');
+  } else if (diffDays < 30) {
+    const weeks = Math.floor(diffDays / 7);
+    displayText = formatter.format(-weeks, 'week');
+  } else {
+    const months = Math.floor(diffDays / 30);
+    displayText = formatter.format(-months, 'month');
+  }
+  
+  return { days: diffDays, colorClass, displayText };
+};
+
+export default function TabCard({ title, url, category, onEdit, onDelete, createdAt }) {
   const handleCopyUrl = async (e) => {
     e.stopPropagation();
     try {
@@ -17,6 +55,7 @@ export default function TabCard({ title, url, category, onEdit, onDelete }) {
     }
   };
   const domain = new URL(url).hostname.replace('www.', '');
+  const { colorClass, displayText } = createdAt ? getDaysAgoInfo(createdAt) : { colorClass: 'bg-gray-400', displayText: 'Nuevo' };
   
   return (
     <div className="group relative">
@@ -28,7 +67,12 @@ export default function TabCard({ title, url, category, onEdit, onDelete }) {
           className="block p-4 pr-14 rounded-xl shadow bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200 border border-transparent hover:border-primary/20 relative z-10"
         >
           <div className="flex items-start gap-3">
-            <div className="mt-0.5 flex-shrink-0 w-3 h-3 rounded-full bg-blue-500"></div>
+            <div className="relative group/indicator">
+              <div className={`w-3 h-3 rounded-full ${colorClass} transition-all duration-300 group-hover/indicator:scale-125`}></div>
+              <span className="absolute left-1/2 -translate-x-1/2 -top-6 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover/indicator:opacity-100 pointer-events-none transition-opacity duration-200">
+                {displayText}
+              </span>
+            </div>
             <div className="flex-1 min-w-0">
               <h3 className="text-base font-medium text-gray-900 dark:text-white truncate">
                 {title}
@@ -41,6 +85,10 @@ export default function TabCard({ title, url, category, onEdit, onDelete }) {
                   {category}
                 </span>
               )}
+              <div className="flex items-center mt-1 text-xs text-gray-400">
+                <FaClock className="mr-1" size={10} />
+                <span>{displayText}</span>
+              </div>
             </div>
             <FaExternalLinkAlt className="flex-shrink-0 text-gray-400 group-hover:text-primary transition-colors" />
           </div>

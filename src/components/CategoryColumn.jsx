@@ -114,6 +114,7 @@ export default function CategoryColumn({
               title={tab.title}
               url={tab.url}
               category={tab.category}
+              createdAt={tab.createdAt || new Date().toISOString()}
               onEdit={() => onEditTab?.(tab)}
               onDelete={() => onDeleteTab?.(tab.id)}
             />
