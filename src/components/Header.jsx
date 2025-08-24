@@ -23,10 +23,9 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
   
   // Calcular estadísticas
   const totalTabs = tabs.length;
-  const uniqueCategories = [...new Set(tabs.map(tab => tab.category).filter(Boolean))];
-  const totalCategories = uniqueCategories.length;
-  const httpLinks = tabs.filter(tab => tab.url.startsWith('http:')).length;
-  const httpsLinks = tabs.filter(tab => tab.url.startsWith('https:')).length;
+  const totalCategories = categories.length;
+  const httpLinks = tabs.filter(tab => tab.url && tab.url.startsWith('http:')).length;
+  const httpsLinks = tabs.filter(tab => tab.url && tab.url.startsWith('https:')).length;
   return (
     <div className="mb-6">
       <div className="flex items-center justify-between mb-3">
@@ -63,7 +62,7 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
               <div className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg py-1 z-50 border border-gray-200 dark:border-gray-700">
                 <button
                   onClick={() => {
-                    exportToCSV(tabs, uniqueCategories);
+                    exportToCSV(tabs, categories);
                     setShowExportMenu(false);
                   }}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -72,7 +71,7 @@ export default function Header({ onAddTab, onAddCategory, tabs = [], categories 
                 </button>
                 <button
                   onClick={() => {
-                    exportToJSON(tabs, uniqueCategories);
+                    exportToJSON(tabs, categories);
                     setShowExportMenu(false);
                   }}
                   className="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"

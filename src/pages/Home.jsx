@@ -273,6 +273,7 @@ export default function Home() {
         onAddTab={() => handleAddTab()} 
         onAddCategory={handleAddCategory}
         tabs={tabs}
+        categories={categories}
       />
       
       <DndProvider backend={HTML5Backend}>
